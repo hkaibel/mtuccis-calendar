@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Team Calendar - Shared</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe0b3 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        h1 {
+            color: #d97706;
+            font-size: 28px;
+        }
+        
+        .btn {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #b45309;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-btn {
+            background: #f3f4f6;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .nav-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .month-year {
+            font-size: 24px;
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .day-header {
+            text-align: center;
+            font-weight: bold;
+            color: #6b7280;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        
+        .calendar-day {
+            min-height: 100px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+            position: relative;
+        }
+        
+        .calendar-day.other-month {
+            background: #f9fafb;
+            opacity: 0.5;
+        }
+        
+        .calendar-day.today {
+            border-color: #d97706;
+            background: #fff7ed;
+        }
+        
+        .day-number {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .event-item {
+            background: #dbeafe;
+            border-left: 3px solid #3b82f6;
+            padding: 4px 6px;
+            margin-top: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .event-item:hover {
+            transform: translateX(2px);
+        }
+        
+        .event-list {
+            margin-top: 30px;
+        }
+        
+        .event-list h2 {
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        
+        .event-card {
+            background: #f9fafb;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .event-card:hover {
+            transform: translateX(4px);
+        }
+        
+        .event-card h3 {
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .event-card p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .delete-btn {
+            background: #dc2626;
+            margin-left: auto;
+        }
+        
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .sharing-notice {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sharing-notice">
+            <strong>📢 Shared Calendar:</strong> Everyone with access to this page can view and edit events. All changes are visible to the entire team!
+        </div>
+
+        <header>
+            <h1>🍴 Restaurant Team Calendar</h1>
+            <button class="btn" onclick="openAddModal()">+ Add Event</button>
+        </header>
+        
+        <div class="calendar-nav">
+            <button class="nav-btn" onclick="changeMonth(-1)">←</button>
+            <div class="month-year" id="monthYear"></div>
+            <button class="nav-btn" onclick="changeMonth(1)">→</button>
+        </div>
+        
+        <div id="loadingCalendar" class="loading">Loading calendar...</div>
+        <div class="calendar-grid" id="calendar" style="display:none;"></div>
+        
+        <div class="event-list">
+            <h2>Upcoming Events</h2>
+            <div id="eventList" class="loading">Loading events...</div>
+        </div>
+    </div>
+    
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Add Event</h2>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label>Event Name *</label>
+                    <input type="text" id="eventName" required>
+                </div>
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="eventDesc" placeholder="Details about the event..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Added by (optional)</label>
+                    <input type="text" id="eventAuthor" placeholder="Your name">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn delete-btn" id="deleteBtn" style="display:none;" onclick="deleteEvent()">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let events = {};
+        let editingEventId = null;
+
+        // Initialize
+        loadEvents();
+
+        async function loadEvents() {
+            try {
+                const result = await window.storage.list('cal-event:');
+                
+                if (result && result.keys && result.keys.length > 0) {
+                    const eventPromises = result.keys.map(key => window.storage.get(key));
+                    const eventResults = await Promise.all(eventPromises);
+                    
+                    events = {};
+                    eventResults.forEach(result => {
+                        if (result && result.value) {
+                            const event = JSON.parse(result.value);
+                            if (!events[event.date]) events[event.date] = [];
+                            events[event.date].push(event);
+                        }
+                    });
+                } else {
+                    events = {};
+                }
+                
+                document.getElementById('loadingCalendar').style.display = 'none';
+                document.getElementById('calendar').style.display = 'grid';
+                renderCalendar();
+                renderEventList();
+            } catch (error) {
+                console.log('No existing events or error loading:', error);
+                events = {};
+                document.getElementById('loadingCalendar').style.display = 'none';
+                document.getElementById('calendar').style.display = 'grid';
+                renderCalendar();
+                renderEventList();
+            }
+        }
+
+        async function saveEvent(event) {
+            try {
+                await window.storage.set(`cal-event:${event.id}`, JSON.stringify(event), true);
+            } catch (error) {
+                alert('Error saving event. Please try again.');
+                console.error(error);
+            }
+        }
+
+        async function deleteEventFromStorage(eventId) {
+            try {
+                await window.storage.delete(`cal-event:${eventId}`, true);
+            } catch (error) {
+                console.error('Error deleting event:', error);
+            }
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('monthYear').textContent = 
+                currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevLastDay = new Date(year, month, 0);
+            
+            const firstDayOfWeek = firstDay.getDay();
+            const lastDate = lastDay.getDate();
+            const prevLastDate = prevLastDay.getDate();
+            
+            let calendarHTML = '';
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            days.forEach(day => {
+                calendarHTML += `<div class="day-header">${day}</div>`;
+            });
+            
+            // Previous month days
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const day = prevLastDate - i;
+                calendarHTML += `<div class="calendar-day other-month">
+                    <div class="day-number">${day}</div>
+                </div>`;
+            }
+            
+            // Current month days
+            const today = new Date();
+            for (let day = 1; day <= lastDate; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getDate() === day && 
+                               today.getMonth() === month && 
+                               today.getFullYear() === year;
+                
+                const dayEvents = events[dateStr] || [];
+                
+                let eventsHTML = '';
+                dayEvents.forEach(event => {
+                    const eventName = event.name.replace(/'/g, "\\'");
+                    eventsHTML += `<div class="event-item" onclick="openEditModal('${dateStr}', '${event.id}')">${event.name}</div>`;
+                });
+                
+                calendarHTML += `<div class="calendar-day ${isToday ? 'today' : ''}">
+                    <div class="day-number">${day}</div>
+                    ${eventsHTML}
+                </div>`;
+            }
+            
+            document.getElementById('calendar').innerHTML = calendarHTML;
+        }
+
+        function renderEventList() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let upcomingEvents = [];
+            
+            Object.keys(events).forEach(dateStr => {
+                const eventDate = new Date(dateStr + 'T00:00:00');
+                if (eventDate >= today) {
+                    events[dateStr].forEach(event => {
+                        upcomingEvents.push({
+                            date: dateStr,
+                            eventDate: eventDate,
+                            ...event
+                        });
+                    });
+                }
+            });
+            
+            upcomingEvents.sort((a, b) => a.eventDate - b.eventDate);
+            
+            let listHTML = '';
+            upcomingEvents.slice(0, 10).forEach(event => {
+                const dateObj = new Date(event.date + 'T00:00:00');
+                const dateStr = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                listHTML += `<div class="event-card" onclick="openEditModal('${event.date}', '${event.id}')">
+                    <h3>${event.name}</h3>
+                    <p>${dateStr}</p>
+                    ${event.description ? `<p style="margin-top:8px;">${event.description}</p>` : ''}
+                    ${event.author ? `<p style="margin-top:8px; font-style:italic;">Added by: ${event.author}</p>` : ''}
+                </div>`;
+            });
+            
+            document.getElementById('eventList').innerHTML = listHTML || '<p style="color:#6b7280;">No upcoming events</p>';
+        }
+
+        function openAddModal() {
+            editingEventId = null;
+            document.getElementById('modalTitle').textContent = 'Add Event';
+            document.getElementById('eventForm').reset();
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function openEditModal(dateStr, eventId) {
+            const event = events[dateStr].find(e => e.id === eventId);
+            if (!event) return;
+            
+            editingEventId = { dateStr, eventId };
+            document.getElementById('modalTitle').textContent = 'Edit Event';
+            document.getElementById('eventName').value = event.name;
+            document.getElementById('eventDate').value = dateStr;
+            document.getElementById('eventDesc').value = event.description || '';
+            document.getElementById('eventAuthor').value = event.author || '';
+            document.getElementById('deleteBtn').style.display = 'block';
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+            editingEventId = null;
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('eventName').value;
+            const date = document.getElementById('eventDate').value;
+            const description = document.getElementById('eventDesc').value;
+            const author = document.getElementById('eventAuthor').value;
+            
+            if (editingEventId) {
+                // Edit existing event
+                const oldDate = editingEventId.dateStr;
+                const eventId = editingEventId.eventId;
+                
+                const event = {
+                    id: eventId,
+                    name,
+                    date,
+                    description,
+                    author
+                };
+                
+                // Delete old event if date changed
+                if (oldDate !== date) {
+                    events[oldDate] = events[oldDate].filter(e => e.id !== eventId);
+                    if (events[oldDate].length === 0) delete events[oldDate];
+                }
+                
+                // Add/update event
+                if (!events[date]) events[date] = [];
+                const existingIndex = events[date].findIndex(e => e.id === eventId);
+                if (existingIndex >= 0) {
+                    events[date][existingIndex] = event;
+                } else {
+                    events[date].push(event);
+                }
+                
+                await saveEvent(event);
+            } else {
+                // Add new event
+                const id = `evt_${Date.now()}`;
+                const event = {
+                    id,
+                    name,
+                    date,
+                    description,
+                    author
+                };
+                
+                if (!events[date]) events[date] = [];
+                events[date].push(event);
+                
+                await saveEvent(event);
+            }
+            
+            renderCalendar();
+            renderEventList();
+            closeModal();
+        });
+
+        async function deleteEvent() {
+            if (!editingEventId) return;
+            
+            if (confirm('Delete this event? This will remove it for everyone.')) {
+                const { dateStr, eventId } = editingEventId;
+                
+                await deleteEventFromStorage(eventId);
+                
+                events[dateStr] = events[dateStr].filter(e => e.id !== eventId);
+                if (events[dateStr].length === 0) delete events[dateStr];
+                
+                renderCalendar();
+                renderEventList();
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
